@@ -76,6 +76,27 @@ function onYouTubeIframeAPIReady() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Theme Switcher Logic
+    const themeSelector = document.getElementById('theme-selector');
+    
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        if (themeSelector) {
+            themeSelector.value = theme;
+        }
+        localStorage.setItem('ambient_theme', theme);
+    }
+    
+    // Initialize Theme
+    const savedTheme = localStorage.getItem('ambient_theme') || 'midnight';
+    applyTheme(savedTheme);
+
+    if (themeSelector) {
+        themeSelector.addEventListener('change', (e) => {
+            applyTheme(e.target.value);
+        });
+    }
+
     // Clock Update
     function updateClock() {
         const clock = document.getElementById('clock-display');

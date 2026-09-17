@@ -14,7 +14,7 @@
 </head>
 <body>
     <!-- Fullscreen Video Background Container -->
-    <div id="video-background-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: linear-gradient(135deg, #1e1e38, #2a2a4a); overflow: hidden;">
+    <div id="video-background-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; overflow: hidden;">
         {% for sound in sounds %}
         <div id="yt-player-{{ sound.id }}" class="bg-video" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh; opacity: 0; transition: opacity 1s ease; pointer-events: none;"></div>
         {% endfor %}
@@ -25,6 +25,11 @@
         <div style="width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
             <span id="clock-display" style="font-size: 1.2rem; color: #fff; font-weight: bold; margin-right: auto; padding-left: 10px;"></span>
             <span id="greeting-text" style="font-size: 1rem; color: rgba(255,255,255,0.8); font-weight: 500;">Hello, <strong style="color:#fff;">{{ request.user.username }}</strong></span>
+            <select id="theme-selector" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; outline: none;">
+                <option value="midnight" style="background: #0B1117;">Midnight Teal</option>
+                <option value="forest" style="background: #0B1210;">Forest Sage</option>
+                <option value="storm" style="background: #07141D;">Storm Ocean</option>
+            </select>
             {% if request.user.is_superuser %}
             <a href="{% url 'admin:index' %}" class="yt-button" style="padding: 5px 15px; font-size: 0.8rem; background: var(--primary-color); text-decoration: none; border-radius: 8px;">Application Manager</a>
             {% endif %}
