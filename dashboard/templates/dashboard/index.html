@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ambient Dashboard</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}?v=2">
     
     <!-- PWA Setup -->
     <link rel="manifest" href="{% static 'dashboard/manifest.json' %}">
@@ -33,7 +33,7 @@
             </select>
             {% endif %}
             {% if request.user.is_superuser %}
-            <a href="{% url 'admin:index' %}" class="yt-button" style="padding: 5px 15px; font-size: 0.8rem; background: var(--primary-color); text-decoration: none; border-radius: 8px;">Application Manager</a>
+            <a href="{% url 'app_manager' %}" class="yt-button" style="padding: 5px 15px; font-size: 0.8rem; background: var(--primary-color); text-decoration: none; border-radius: 8px;">Application Manager</a>
             {% endif %}
             <form method="POST" action="{% url 'logout' %}" style="margin:0;">
                 {% csrf_token %}
@@ -211,6 +211,6 @@
             });
         }
     </script>
-    <script src="{% static 'dashboard/script.js' %}"></script>
+    <script src="{% static 'dashboard/script.js' %}?v=2"></script>
 </body>
 </html>

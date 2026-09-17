@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Manager</title>
+    <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}?v=2">
+    <style>
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn { background: transparent; border: none; color: var(--text-color); font-size: 1rem; cursor: pointer; padding: 10px 15px; border-radius: 8px; transition: 0.3s; }
+        .tab-btn.active, .tab-btn:hover { background: var(--card-hover); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .data-table th, .data-table td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: left; }
+        .data-table th { color: var(--primary-color); font-weight: bold; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--secondary-text); }
+        .form-group input[type="text"], .form-group input[type="password"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: #fff; box-sizing: border-box; }
+        .multiselect { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); max-height: 150px; overflow-y: auto; }
+        .multiselect label { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; cursor: pointer; color: #fff;}
+        .card { padding: 20px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <header style="flex-direction: row; justify-content: space-between;">
+        <h1>Application Manager</h1>
+        <a href="{% url 'dashboard' %}" class="yt-button" style="text-decoration: none;">Back to Dashboard</a>
+    </header>
+
+    <main style="width: 100%; max-width: 900px; padding: 20px;">
+        
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div style="padding: 10px; background: var(--primary-color); color: #fff; border-radius: 8px; margin-bottom: 10px;">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('users', event)">Users</button>
+            <button class="tab-btn" onclick="showTab('themes', event)">Themes</button>
+            <button class="tab-btn" onclick="showTab('sounds', event)">Ambience Enhancers</button>
+            <button class="tab-btn" onclick="showTab('playlists', event)">Playlists</button>
+        </div>
+
+        <!-- USERS TAB -->
+        <div id="users" class="tab-content active">
+            <div class="card glass">
+                <h3>Add New User</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_user">
+                    <div class="form-group">
+                        <input type="text" name="username" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password" placeholder="Password" required>
+                    </div>
+                    <div class="form-group" style="display:flex; gap: 10px; align-items:center;">
+                        <input type="checkbox" name="is_admin" id="is_admin" value="yes">
+                        <label for="is_admin" style="margin:0; color:#fff;">Grant Admin Privileges?</label>
+                    </div>
+                    <button type="submit" class="yt-button">Create User</button>
+                </form>
+            </div>
+            
+            <div class="card glass">
+                <h3>Registered Users</h3>
+                <table class="data-table">
+                    <tr><th>Username</th><th>Is Admin?</th><th>Actions</th></tr>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.username }}</td>
+                        <td>{{ u.is_superuser|yesno:"Yes,No" }}</td>
+                        <td>
+                            <form method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle_admin">
+                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                <button type="submit" class="yt-button" style="padding: 5px 10px; font-size: 0.8rem;">Toggle Admin</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+        <!-- THEMES TAB -->
+        <div id="themes" class="tab-content">
+            <div class="card glass">
+                <h3>Manage Themes Access</h3>
+                <p style="color: var(--secondary-text); font-size: 0.9rem;">Check the box next to a user's name to grant them access to the theme.</p>
+                {% for theme in all_themes %}
+                <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                    <h4 style="color: {{ theme.background_color_hex }}; filter: brightness(1.5);">{{ theme.name }} ({{ theme.css_class }})</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_theme_access">
+                        <input type="hidden" name="theme_id" value="{{ theme.id }}">
+                        <div class="multiselect">
+                            {% for u in users %}
+                            <label>
+                                <input type="checkbox" name="allowed_users" value="{{ u.id }}" {% if u in theme.allowed_users.all %}checked{% endif %}>
+                                {{ u.username }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="yt-button" style="margin-top: 10px;">Save Access</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- SOUNDS TAB -->
+        <div id="sounds" class="tab-content">
+            <div class="card glass">
+                <h3>Manage Sounds Access</h3>
+                {% for sound in all_sounds %}
+                <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                    <h4>{{ sound.icon }} {{ sound.name }}</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_sound_access">
+                        <input type="hidden" name="sound_id" value="{{ sound.id }}">
+                        <div class="multiselect">
+                            {% for u in users %}
+                            <label>
+                                <input type="checkbox" name="allowed_users" value="{{ u.id }}" {% if u in sound.allowed_users.all %}checked{% endif %}>
+                                {{ u.username }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="yt-button" style="margin-top: 10px;">Save Access</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- PLAYLISTS TAB -->
+        <div id="playlists" class="tab-content">
+            <div class="card glass">
+                <h3>Manage Playlists Access</h3>
+                {% for playlist in all_playlists %}
+                <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                    <h4>{{ playlist.name }}</h4>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_playlist_access">
+                        <input type="hidden" name="playlist_id" value="{{ playlist.id }}">
+                        <div class="multiselect">
+                            {% for u in users %}
+                            <label>
+                                <input type="checkbox" name="allowed_users" value="{{ u.id }}" {% if u in playlist.allowed_users.all %}checked{% endif %}>
+                                {{ u.username }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="yt-button" style="margin-top: 10px;">Save Access</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function showTab(tabId, event) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(event) {
+                event.target.classList.add('active');
+            }
+        }
+        
+        // Ensure the correct theme background is applied
+        const savedTheme = localStorage.getItem('ambient_theme') || 'midnight';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</body>
+</html>
