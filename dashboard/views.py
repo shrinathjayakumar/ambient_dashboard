@@ -96,3 +96,7 @@ def logout_view(request):
     if request.method == 'POST':
         logout(request)
     return redirect('login')
+
+def sw_js(request):
+    return render(request, 'dashboard/sw.js', content_type='application/javascript')
+

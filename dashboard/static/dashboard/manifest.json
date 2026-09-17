@@ -1,0 +1,21 @@
+{
+  "name": "Ambient Dashboard",
+  "short_name": "Ambient",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1e38",
+  "theme_color": "#1e1e38",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/dashboard/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/static/dashboard/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
