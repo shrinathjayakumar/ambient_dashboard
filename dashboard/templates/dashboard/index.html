@@ -25,6 +25,9 @@
         <div style="width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
             <span id="clock-display" style="font-size: 1.2rem; color: #fff; font-weight: bold; margin-right: auto; padding-left: 10px;"></span>
             <span id="greeting-text" style="font-size: 1rem; color: rgba(255,255,255,0.8); font-weight: 500;">Hello, <strong style="color:#fff;">{{ request.user.username }}</strong></span>
+            {% if request.user.is_superuser %}
+            <a href="{% url 'admin:index' %}" class="yt-button" style="padding: 5px 15px; font-size: 0.8rem; background: var(--primary-color); text-decoration: none; border-radius: 8px;">Application Manager</a>
+            {% endif %}
             <form method="POST" action="{% url 'logout' %}" style="margin:0;">
                 {% csrf_token %}
                 <button type="submit" class="yt-button" style="padding: 5px 15px; font-size: 0.8rem; background: transparent;">Logout</button>

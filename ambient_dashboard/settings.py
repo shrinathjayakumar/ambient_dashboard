@@ -109,3 +109,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+CSRF_TRUSTED_ORIGINS = ['https://shrinath.pythonanywhere.com', 'http://127.0.0.1', 'http://localhost']
+
