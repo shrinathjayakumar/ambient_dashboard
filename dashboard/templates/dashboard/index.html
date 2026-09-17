@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambient Dashboard</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}">
+</head>
+<body>
+    <!-- Fullscreen Video Background Container -->
+    <div id="video-background-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: linear-gradient(135deg, #1e1e38, #2a2a4a); overflow: hidden;">
+        {% for sound in sounds %}
+        <div id="yt-player-{{ sound.id }}" class="bg-video" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh; opacity: 0; transition: opacity 1s ease; pointer-events: none;"></div>
+        {% endfor %}
+        <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(30, 30, 56, 0.4); pointer-events: none;"></div>
+    </div>
+
+    <header style="flex-direction: column; gap: 20px;">
+        <div style="width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+            <span id="greeting-text" style="font-size: 1rem; color: rgba(255,255,255,0.8); font-weight: 500;">Hello, <strong style="color:#fff;">{{ request.user.username }}</strong></span>
+            <form method="POST" action="{% url 'logout' %}" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="yt-button" style="padding: 5px 15px; font-size: 0.8rem; background: transparent;">Logout</button>
+            </form>
+        </div>
+        <!-- Glassmorphism Nav Bar -->
+        <div class="nav-bar">
+            <button class="nav-btn active" data-target="media-player-section">🎵 Media Player</button>
+            <button class="nav-btn" data-target="ambience-section">🌧️ Ambience Enhancers</button>
+            <button class="nav-btn" data-target="playlist-manager-section">📁 Playlist Manager</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Media Player Section -->
+        <div id="media-player-section" class="tab-section active">
+            <div class="music-player-card">
+                <div class="music-info">
+                    <h2>Now Playing</h2>
+                    <p id="music-title">Select a Playlist</p>
+                    <div class="playlist-selector">
+                        <select id="playlist-select">
+                            <option value="" disabled selected>-- Choose Playlist --</option>
+                            {% for pl in playlists %}
+                            <option value="{{ pl.url }}" {% if pl.is_default %}selected{% endif %}>{{ pl.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="main-music-player-container" style="flex:1; max-width:400px; display:flex; justify-content:center; width:100%;">
+                    <div id="spotify-container" style="display:none; width:100%;"></div>
+                    <div id="youtube-container">
+                        <div id="main-music-player" style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"></div>
+                    </div>
+                </div>
+                
+            <div class="music-controls" id="music-controls-container">
+                    <button class="play-btn" id="music-prev-btn" style="width: 40px; height: 40px; font-size: 1rem; margin-right: -15px;">⏮</button>
+                    <button class="play-btn" id="music-play-btn">▶</button>
+                    <button class="play-btn" id="music-next-btn" style="width: 40px; height: 40px; font-size: 1rem; margin-left: -15px;">⏭</button>
+                    <div class="volume-container">
+                        <input type="range" id="music-volume" min="0" max="1" step="0.01" value="0.5">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ambience Indicator Bubbles -->
+            <div class="ambience-bubbles-container" style="display:flex; justify-content:center; gap: 15px; margin-top: 20px;">
+                {% for sound in sounds %}
+                <div class="ambience-bubble bubble-{{ sound.id }} play-toggle" data-id="{{ sound.id }}" title="{{ sound.name }}">
+                    {{ sound.icon }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Ambience Enhancers Section -->
+        <div id="ambience-section" class="tab-section" style="display: none;">
+            
+            <!-- Add New Enhancer Form -->
+            <div class="music-player-card" style="flex-direction: column; align-items: stretch; margin-bottom: 30px; padding: 25px;">
+                <h3 style="margin: 0 0 15px 0; font-size: 1rem; color: rgba(255,255,255,0.7); text-align: left;">Add New Ambience Enhancer</h3>
+                <form method="POST" style="display:flex; gap:10px; align-items:center;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_sound">
+                    <input type="text" name="icon" placeholder="Emoji (e.g. 🌧️)" required style="width: 80px; padding:12px; border-radius:10px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:#fff; text-align:center;">
+                    <input type="text" name="name" placeholder="Name (e.g. Rain)" required style="flex:1; padding:12px; border-radius:10px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:#fff;">
+                    <input type="url" name="url" placeholder="YouTube URL" required style="flex:2; padding:12px; border-radius:10px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:#fff;">
+                    <button type="submit" class="yt-button" style="padding: 12px 20px; border-radius:10px; cursor: pointer; background:rgba(255,255,255,0.1);">Add</button>
+                </form>
+            </div>
+
+            <div class="sound-grid">
+                {% for sound in sounds %}
+                <div class="sound-card" data-id="{{ sound.id }}" data-url="{{ sound.audio_url }}" style="position: relative;">
+                    <!-- Edit Button in top right corner -->
+                    <a href="{% url 'edit_sound' sound.id %}" class="yt-button" style="position: absolute; top: 10px; right: 10px; padding: 4px 8px; font-size: 0.7rem; border-radius: 6px; background: rgba(255,255,255,0.1); text-decoration: none;">Edit</a>
+
+                    <div class="card-content play-toggle" data-id="{{ sound.id }}" style="cursor: pointer; width: 100%;">
+                        <div class="icon" style="font-size: 4rem; margin-bottom: 10px;">{{ sound.icon }}</div>
+                        <h3 style="margin: 0 0 5px 0;">{{ sound.name }}</h3>
+                        <small style="display: block; font-size: 0.65rem; color: rgba(255,255,255,0.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; margin: 0 auto;">{{ sound.audio_url }}</small>
+                    </div>
+                    
+                    <audio id="audio-{{ sound.id }}" src="{% if 'youtube.com' not in sound.audio_url and 'youtu.be' not in sound.audio_url %}{{ sound.audio_url }}{% endif %}" loop preload="metadata" style="display:none;"></audio>
+                    
+                    <div class="controls" style="margin-top: 15px;">
+                        <input type="range" class="volume-slider" data-id="{{ sound.id }}" min="0" max="1" step="0.01" value="0.5">
+                    </div>
+                </div>
+                {% empty %}
+                <p class="empty-state" style="grid-column: 1/-1;">No ambient sounds available. Add some using the form above!</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Manage Playlists Section -->
+        <div id="playlist-manager-section" class="tab-section" style="display: none;">
+            <div class="music-player-card" style="flex-direction: column; align-items: stretch; margin-bottom: 40px; padding: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: var(--primary-color); margin: 0; font-size:1.1rem; text-transform:uppercase;">Manage Playlists</h2>
+                </div>
+                
+                <div style="margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid var(--border-color);">
+                    <h3 style="margin: 0 0 15px 0; font-size: 1rem; color: rgba(255,255,255,0.7); text-align: left;">Add New Playlist</h3>
+                    <form method="POST" style="display:flex; gap:10px; align-items:center;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add">
+                        <input type="text" name="name" placeholder="Playlist Name" required style="flex:1; padding:12px; border-radius:10px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:#fff;">
+                        <input type="url" name="url" placeholder="YouTube or Spotify Link" required style="flex:2; padding:12px; border-radius:10px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:#fff;">
+                        <button type="submit" class="yt-button" style="padding: 12px 20px; border-radius:10px; cursor: pointer; background:rgba(255,255,255,0.1);">Add</button>
+                    </form>
+                </div>
+
+                <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
+                    {% for pl in playlists %}
+                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border-color);">
+                        <div style="text-align: left; overflow: hidden;">
+                            <strong style="font-size:1.1rem;">{{ pl.name }}</strong> 
+                            {% if pl.is_default %}
+                            <span style="font-size: 0.7em; background:var(--primary-color); padding: 2px 6px; border-radius:10px; color:#fff; margin-left:8px;">Default</span>
+                            {% endif %}
+                            <br>
+                            <small style="color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 300px;">{{ pl.url }}</small>
+                        </div>
+                        <div style="display:flex; gap: 8px; align-items: center;">
+                            {% if not pl.is_default %}
+                            <form method="POST" style="margin:0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="set_default">
+                                <input type="hidden" name="pk" value="{{ pl.id }}">
+                                <button type="submit" class="yt-button" style="padding: 5px 12px; font-size: 0.8em; cursor: pointer;">Set Default</button>
+                            </form>
+                            {% endif %}
+                            <a href="{% url 'edit_playlist' pl.id %}" class="yt-button" style="padding: 5px 12px; font-size: 0.8em;">Edit</a>
+                            <form method="POST" action="{% url 'delete_playlist' pl.id %}" style="margin:0;">
+                                {% csrf_token %}
+                                <button type="submit" class="yt-button" style="padding: 5px 12px; font-size: 0.8em; color: #ff4d4d; border-color: rgba(255,77,77,0.3); cursor: pointer;">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="{% static 'dashboard/script.js' %}"></script>
+</body>
+</html>

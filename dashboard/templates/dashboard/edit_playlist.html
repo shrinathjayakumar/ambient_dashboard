@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Playlist - Ambient Dashboard</title>
+    <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Edit Playlist</h1>
+        <a href="{% url 'dashboard' %}" class="yt-button">Cancel & Return</a>
+    </header>
+
+    <main>
+        <div class="music-player-card" style="flex-direction: column; align-items: stretch; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: var(--primary-color); margin-top:0;">{{ playlist.name }}</h2>
+            <form method="POST" style="display:flex; flex-direction:column; gap:20px;">
+                {% csrf_token %}
+                <div style="display:flex; flex-direction:column; text-align:left;">
+                    <label style="margin-bottom:5px; font-weight:600;">Playlist Name</label>
+                    <input type="text" name="name" value="{{ playlist.name }}" required style="padding:15px; border-radius:10px; border:1px solid var(--border-color); background:rgba(255,255,255,0.1); color:#fff; font-size:1rem;">
+                </div>
+                <div style="display:flex; flex-direction:column; text-align:left;">
+                    <label style="margin-bottom:5px; font-weight:600;">URL (YouTube or Spotify)</label>
+                    <input type="url" name="url" value="{{ playlist.url }}" required style="padding:15px; border-radius:10px; border:1px solid var(--border-color); background:rgba(255,255,255,0.1); color:#fff; font-size:1rem;">
+                </div>
+                <button type="submit" class="yt-button" style="padding:15px; border-radius:10px; font-size:1rem; margin-top:10px; background:var(--primary-color); color:#fff; border:none; box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4);">Save Changes</button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

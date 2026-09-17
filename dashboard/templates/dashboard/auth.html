@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Ambient Dashboard</title>
+    <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}">
+    <style>
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 100px auto;
+            text-align: center;
+        }
+        .auth-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+        .auth-card form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+            margin-top: 20px;
+        }
+        .auth-card input {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .auth-card label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+        }
+        .helptext, .errorlist {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .errorlist {
+            color: #ff4d4d;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h1 style="margin-bottom: 30px;">Ambient Dashboard</h1>
+        <div class="auth-card">
+            <h2 style="color: var(--primary-color); margin-top: 0;">{{ title }}</h2>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="yt-button" style="margin-top: 15px; width: 100%; padding: 15px; background: rgba(255,255,255,0.15);">{{ title }}</button>
+            </form>
+            
+            <div style="margin-top: 25px; font-size: 0.9rem;">
+                {% if is_login %}
+                Don't have an account? <a href="{% url 'register' %}" style="color: var(--primary-color); text-decoration: none;">Register here</a>
+                {% else %}
+                Already have an account? <a href="{% url 'login' %}" style="color: var(--primary-color); text-decoration: none;">Login here</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
