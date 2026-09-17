@@ -15,19 +15,21 @@ function onYouTubeIframeAPIReady() {
         },
         events: {
             'onReady': (event) => {
-                event.target.setVolume(50);
+                event.target.setVolume(100);
                 document.getElementById('music-title').innerText = "Lofi Girl - beats to relax/study to";
             },
             'onStateChange': (event) => {
                 const btn = document.getElementById('music-play-btn');
+                const playSVG = '<svg class="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+                const pauseSVG = '<svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
                 if (event.data === YT.PlayerState.PLAYING) {
-                    if (btn) btn.textContent = '⏸';
+                    if (btn) btn.innerHTML = pauseSVG;
                     const videoData = event.target.getVideoData();
                     if (videoData && videoData.title) {
                         document.getElementById('music-title').innerText = videoData.title;
                     }
                 } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-                    if (btn) btn.textContent = '▶';
+                    if (btn) btn.innerHTML = playSVG;
                 }
             }
         }
@@ -64,7 +66,7 @@ function onYouTubeIframeAPIReady() {
                     },
                     events: {
                         'onReady': (event) => {
-                            event.target.setVolume(50);
+                            event.target.setVolume(100);
                         }
                     }
                 });
@@ -74,6 +76,17 @@ function onYouTubeIframeAPIReady() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Clock Update
+    function updateClock() {
+        const clock = document.getElementById('clock-display');
+        if (clock) {
+            const now = new Date();
+            clock.innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
     // Dynamic Time-based Greeting
     const greetingText = document.getElementById('greeting-text');
     if (greetingText) {
@@ -192,12 +205,14 @@ document.addEventListener('DOMContentLoaded', () => {
         musicPlayBtn.addEventListener('click', () => {
             if (mainMusicPlayer && typeof mainMusicPlayer.getPlayerState === 'function') {
                 const state = mainMusicPlayer.getPlayerState();
+                const playSVG = '<svg class="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+                const pauseSVG = '<svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
                 if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) {
                     mainMusicPlayer.pauseVideo();
-                    musicPlayBtn.textContent = '▶';
+                    musicPlayBtn.innerHTML = playSVG;
                 } else {
                     mainMusicPlayer.playVideo();
-                    musicPlayBtn.textContent = '⏸';
+                    musicPlayBtn.innerHTML = pauseSVG;
                 }
             }
         });
@@ -207,7 +222,8 @@ document.addEventListener('DOMContentLoaded', () => {
         musicPrevBtn.addEventListener('click', () => {
             if (mainMusicPlayer && typeof mainMusicPlayer.previousVideo === 'function') {
                 mainMusicPlayer.previousVideo();
-                musicPlayBtn.textContent = '⏸';
+                const pauseSVG = '<svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                musicPlayBtn.innerHTML = pauseSVG;
             }
         });
     }
@@ -216,7 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
         musicNextBtn.addEventListener('click', () => {
             if (mainMusicPlayer && typeof mainMusicPlayer.nextVideo === 'function') {
                 mainMusicPlayer.nextVideo();
-                musicPlayBtn.textContent = '⏸';
+                const pauseSVG = '<svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                musicPlayBtn.innerHTML = pauseSVG;
             }
         });
     }

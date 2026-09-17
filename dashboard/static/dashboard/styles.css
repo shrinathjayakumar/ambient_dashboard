@@ -427,3 +427,47 @@ input[type=range]::-webkit-slider-thumb:active {
     color: white;
 }
 
+
+/* Music Control Redesign */
+.icon-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.play-main-btn {
+    width: 60px;
+    height: 60px;
+    background: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4);
+}
+
+.play-main-btn:hover {
+    background: #ff607b;
+    box-shadow: 0 6px 20px rgba(255, 117, 140, 0.6);
+    transform: scale(1.1);
+}
+
+.icon-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.play-main-btn svg {
+    width: 28px;
+    height: 28px;
+}
+

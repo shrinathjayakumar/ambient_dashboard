@@ -18,6 +18,7 @@
 
     <header style="flex-direction: column; gap: 20px;">
         <div style="width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+            <span id="clock-display" style="font-size: 1.2rem; color: #fff; font-weight: bold; margin-right: auto; padding-left: 10px;"></span>
             <span id="greeting-text" style="font-size: 1rem; color: rgba(255,255,255,0.8); font-weight: 500;">Hello, <strong style="color:#fff;">{{ request.user.username }}</strong></span>
             <form method="POST" action="{% url 'logout' %}" style="margin:0;">
                 {% csrf_token %}
@@ -56,14 +57,20 @@
                     </div>
                 </div>
                 
-            <div class="music-controls" id="music-controls-container">
-                    <button class="play-btn" id="music-prev-btn" style="width: 40px; height: 40px; font-size: 1rem; margin-right: -15px;">⏮</button>
-                    <button class="play-btn" id="music-play-btn">▶</button>
-                    <button class="play-btn" id="music-next-btn" style="width: 40px; height: 40px; font-size: 1rem; margin-left: -15px;">⏭</button>
-                    <div class="volume-container">
-                        <input type="range" id="music-volume" min="0" max="1" step="0.01" value="0.5">
-                    </div>
-                </div>
+        <div class="music-controls" id="music-controls-container" style="display:flex; align-items:center; justify-content:center; gap: 15px; margin-top: 20px;">
+            <button class="icon-btn" id="music-prev-btn" title="Previous">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button class="icon-btn play-main-btn" id="music-play-btn" title="Play/Pause">
+                <svg class="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+            <button class="icon-btn" id="music-next-btn" title="Next">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+            <div class="volume-container" style="margin-left: 10px;">
+                <input type="range" id="music-volume" min="0" max="1" step="0.01" value="1.0">
+            </div>
+        </div>
             </div>
 
             <!-- Ambience Indicator Bubbles -->
