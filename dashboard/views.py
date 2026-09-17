@@ -3,13 +3,13 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.db import models
-from .models import Sound, Playlist
+from .models import Sound, Playlist, Theme
 
 @login_required
 def dashboard_view(request):
-    # Fetch global sounds AND user-specific sounds
-    sounds = Sound.objects.filter(models.Q(user__isnull=True) | models.Q(user=request.user))
-    playlists = Playlist.objects.filter(user=request.user)
+    sounds = Sound.objects.filter(models.Q(allowed_users=request.user) | models.Q(user=request.user)).distinct()
+    playlists = Playlist.objects.filter(models.Q(allowed_users=request.user) | models.Q(user=request.user)).distinct()
+    themes = Theme.objects.filter(allowed_users=request.user).distinct()
     default_playlist = playlists.filter(is_default=True).first()
     
     if request.method == 'POST':
@@ -18,7 +18,8 @@ def dashboard_view(request):
             name = request.POST.get('name')
             url = request.POST.get('url')
             if name and url:
-                Playlist.objects.create(name=name, url=url, user=request.user)
+                p = Playlist.objects.create(name=name, url=url, user=request.user)
+                p.allowed_users.add(request.user)
         elif action == 'set_default':
             pk = request.POST.get('pk')
             playlists.update(is_default=False)
@@ -28,13 +29,15 @@ def dashboard_view(request):
             icon = request.POST.get('icon')
             url = request.POST.get('url')
             if name and url and icon:
-                Sound.objects.create(name=name, icon=icon, audio_url=url, user=request.user)
+                s = Sound.objects.create(name=name, icon=icon, audio_url=url, user=request.user)
+                s.allowed_users.add(request.user)
         return redirect('dashboard')
 
     return render(request, 'dashboard/index.html', {
         'sounds': sounds, 
         'playlists': playlists,
-        'default_playlist': default_playlist
+        'default_playlist': default_playlist,
+        'themes': themes
     })
 
 @login_required
