@@ -229,52 +229,93 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const playToggles = document.querySelectorAll('.play-toggle');
-    const volumeSliders = document.querySelectorAll('.volume-slider');
+    function attachMediaListeners() {
+        const playToggles = document.querySelectorAll('.play-toggle');
+        const volumeSliders = document.querySelectorAll('.volume-slider');
 
-    // Handle Play/Pause
-    playToggles.forEach(button => {
-        button.addEventListener('click', () => {
-            const soundId = button.getAttribute('data-id');
-            const card = document.querySelector(`.sound-card[data-id="${soundId}"]`);
-            const url = card.getAttribute('data-url');
-            
-            const isYT = url.includes('youtube.com') || url.includes('youtu.be');
-            const bubble = document.querySelector(`.bubble-${soundId}`);
-            const bgVideo = document.getElementById(`yt-player-${soundId}`);
-
-            if (isYT) {
-                const player = ytPlayers[soundId];
-                if (player && typeof player.getPlayerState === 'function') {
-                    const state = player.getPlayerState();
-                    if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) {
-                        player.pauseVideo();
-                        card.classList.remove('active');
-                        if (bubble) bubble.classList.remove('active');
-                        if (bgVideo) bgVideo.classList.remove('active-bg');
-                    } else {
-                        player.playVideo();
-                        card.classList.add('active');
-                        if (bubble) bubble.classList.add('active');
-                        if (bgVideo) bgVideo.classList.add('active-bg');
-                    }
-                }
-            } else {
-                const audio = document.getElementById(`audio-${soundId}`);
-                if (audio.paused) {
-                    audio.play();
-                    card.classList.add('active');
-                    if (bubble) bubble.classList.add('active');
-                } else {
-                    audio.pause();
-                    card.classList.remove('active');
-                    if (bubble) bubble.classList.remove('active');
-                }
+        // Handle Play/Pause
+        playToggles.forEach(button => {
+            // Remove previous listener by replacing node if necessary, but since these are freshly injected DOM elements, we can just attach.
+            // But to be safe, clone the button to strip any existing listeners:
+            const newButton = button.cloneNode(true);
+            if (button.parentNode) {
+                button.parentNode.replaceChild(newButton, button);
             }
             
-            updateBackgroundBlending();
+            newButton.addEventListener('click', () => {
+                const soundId = newButton.getAttribute('data-id');
+                const card = document.querySelector(`.sound-card[data-id="${soundId}"]`);
+                if (!card) return;
+                const url = card.getAttribute('data-url');
+                
+                const isYT = url.includes('youtube.com') || url.includes('youtu.be');
+                const bubble = document.querySelector(`.bubble-${soundId}`);
+                const bgVideo = document.getElementById(`yt-player-${soundId}`);
+
+                if (isYT) {
+                    const player = ytPlayers[soundId];
+                    if (player && typeof player.getPlayerState === 'function') {
+                        const state = player.getPlayerState();
+                        if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) {
+                            player.pauseVideo();
+                            card.classList.remove('active');
+                            if (bubble) bubble.classList.remove('active');
+                            if (bgVideo) bgVideo.classList.remove('active-bg');
+                        } else {
+                            player.playVideo();
+                            card.classList.add('active');
+                            if (bubble) bubble.classList.add('active');
+                            if (bgVideo) bgVideo.classList.add('active-bg');
+                        }
+                    }
+                } else {
+                    const audio = document.getElementById(`audio-${soundId}`);
+                    if (audio && audio.paused) {
+                        audio.play();
+                        card.classList.add('active');
+                        if (bubble) bubble.classList.add('active');
+                    } else if (audio) {
+                        audio.pause();
+                        card.classList.remove('active');
+                        if (bubble) bubble.classList.remove('active');
+                    }
+                }
+                
+                updateBackgroundBlending();
+            });
         });
-    });
+
+        // Handle Volume
+        volumeSliders.forEach(slider => {
+            const newSlider = slider.cloneNode(true);
+            if (slider.parentNode) {
+                slider.parentNode.replaceChild(newSlider, slider);
+            }
+            
+            const soundId = newSlider.getAttribute('data-id');
+            const card = document.querySelector(`.sound-card[data-id="${soundId}"]`);
+            if (!card) return;
+            const url = card.getAttribute('data-url');
+            const isYT = url.includes('youtube.com') || url.includes('youtu.be');
+            
+            if (!isYT) {
+                const audioEl = document.getElementById(`audio-${soundId}`);
+                if (audioEl) audioEl.volume = newSlider.value;
+            }
+
+            newSlider.addEventListener('input', (e) => {
+                if (isYT) {
+                    const player = ytPlayers[soundId];
+                    if (player && typeof player.setVolume === 'function') {
+                        player.setVolume(e.target.value * 100);
+                    }
+                } else {
+                    const audioEl = document.getElementById(`audio-${soundId}`);
+                    if (audioEl) audioEl.volume = e.target.value;
+                }
+            });
+        });
+    }
 
     function updateBackgroundBlending() {
         const activeBgs = document.querySelectorAll('.bg-video.active-bg');
@@ -295,28 +336,139 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Handle Volume
-    volumeSliders.forEach(slider => {
-        const soundId = slider.getAttribute('data-id');
-        const card = document.querySelector(`.sound-card[data-id="${soundId}"]`);
-        const url = card.getAttribute('data-url');
-        const isYT = url.includes('youtube.com') || url.includes('youtu.be');
+    attachMediaListeners();
+
+    // ----------------------------------------------------
+    // AJAX & Modal Logic (Seamless SPA Editing)
+    // ----------------------------------------------------
+    const modal = document.getElementById('global-modal');
+    const modalContent = document.getElementById('global-modal-content');
+
+    window.openModal = async function(url) {
+        if (!modal) return;
+        modalContent.innerHTML = '<div style="text-align:center; padding: 20px;">Loading...</div>';
+        modal.classList.add('active');
         
-        if (!isYT) {
-            const audioEl = document.getElementById(`audio-${soundId}`);
-            audioEl.volume = slider.value;
+        try {
+            const resp = await fetch(url);
+            const text = await resp.text();
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            
+            // Extract the main container (which is what edit forms use)
+            const mainContent = doc.querySelector('.music-player-card') || doc.querySelector('main') || doc.body;
+            
+            modalContent.innerHTML = `
+                <button class="modal-close-btn" onclick="closeModal()">×</button>
+                ${mainContent.innerHTML}
+            `;
+            
+            // Attach AJAX submit to the modal form
+            const forms = modalContent.querySelectorAll('form');
+            forms.forEach(f => f.addEventListener('submit', submitAJAX));
+        } catch (e) {
+            modalContent.innerHTML = `<button class="modal-close-btn" onclick="closeModal()">×</button><p>Error loading content.</p>`;
+        }
+    };
+
+    window.closeModal = function() {
+        if (modal) modal.classList.remove('active');
+    };
+
+    // Close modal if clicked outside
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    }
+
+    window.submitAJAX = async function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        if(form.action && form.action.includes('delete') && !confirm("Are you sure?")) {
+            return;
         }
 
-        slider.addEventListener('input', (e) => {
-            if (isYT) {
-                const player = ytPlayers[soundId];
-                if (player && typeof player.setVolume === 'function') {
-                    player.setVolume(e.target.value * 100);
+        const formData = new FormData(form);
+        const actionUrl = form.action || window.location.href;
+        
+        // Add submit button value if clicked (for forms with multiple submit buttons like action=add vs action=set_default)
+        if (e.submitter && e.submitter.name) {
+            formData.append(e.submitter.name, e.submitter.value);
+        }
+        
+        try {
+            const response = await fetch(actionUrl, {
+                method: form.method || 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            
+            if (response.ok) {
+                closeModal();
+                
+                // Fetch updated dashboard
+                const pageResp = await fetch(window.location.href);
+                const text = await pageResp.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+                
+                // Seamlessly swap out UI components
+                const ambienceSection = document.getElementById('ambience-section');
+                const playlistSection = document.getElementById('playlist-section');
+                const bubbleContainer = document.querySelector('.ambience-bubbles-container');
+                const selectElement = document.getElementById('playlist-select');
+                
+                if (ambienceSection && doc.getElementById('ambience-section')) {
+                    ambienceSection.innerHTML = doc.getElementById('ambience-section').innerHTML;
                 }
-            } else {
-                const audioEl = document.getElementById(`audio-${soundId}`);
-                audioEl.volume = e.target.value;
+                if (playlistSection && doc.getElementById('playlist-section')) {
+                    playlistSection.innerHTML = doc.getElementById('playlist-section').innerHTML;
+                }
+                if (bubbleContainer && doc.querySelector('.ambience-bubbles-container')) {
+                    bubbleContainer.innerHTML = doc.querySelector('.ambience-bubbles-container').innerHTML;
+                }
+                if (selectElement && doc.getElementById('playlist-select')) {
+                    selectElement.innerHTML = doc.getElementById('playlist-select').innerHTML;
+                }
+                
+                // Re-bind logic
+                bindForms();
+                
+                // Minor hack: if they added a new sound, the iframe wasn't created yet.
+                // Re-running onYouTubeIframeAPIReady will safely initialize any NEW iframes!
+                if (typeof onYouTubeIframeAPIReady === 'function') {
+                    onYouTubeIframeAPIReady();
+                }
             }
+        } catch(err) {
+            console.error('AJAX Error:', err);
+        }
+    };
+
+    function bindForms() {
+        // Bind forms on the main page
+        document.querySelectorAll('#ambience-section form, #playlist-section form').forEach(f => {
+            f.removeEventListener('submit', submitAJAX);
+            f.addEventListener('submit', submitAJAX);
         });
-    });
+        
+        // Bind Edit Links
+        document.querySelectorAll('a[href*="/edit/"]').forEach(link => {
+            // Remove previous event listeners by cloning
+            const newLink = link.cloneNode(true);
+            link.parentNode.replaceChild(newLink, link);
+            newLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                openModal(this.href);
+            });
+        });
+        
+        // Rebind play toggles (since the HTML got replaced)
+        attachMediaListeners();
+    }
+
+    bindForms();
 });
