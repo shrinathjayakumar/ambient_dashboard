@@ -2,38 +2,40 @@ let ytPlayers = {};
 let mainMusicPlayer;
 
 function onYouTubeIframeAPIReady() {
-    // Initialize Main Music Player
-    mainMusicPlayer = new YT.Player('main-music-player', {
-        height: '0',
-        width: '0',
-        videoId: 'jfKfPfyJRdk', 
-        playerVars: {
-            'autoplay': 0,
-            'controls': 0,
-            'showinfo': 0,
-            'origin': window.location.origin
-        },
-        events: {
-            'onReady': (event) => {
-                event.target.setVolume(100);
-                document.getElementById('music-title').innerText = "Lofi Girl - beats to relax/study to";
+    // Initialize Main Music Player Safely
+    const mainPlayerNode = document.getElementById('main-music-player');
+    if (mainPlayerNode && mainPlayerNode.tagName !== 'IFRAME') {
+        mainMusicPlayer = new YT.Player('main-music-player', {
+            height: '0',
+            width: '0',
+            videoId: 'jfKfPfyJRdk', 
+            playerVars: {
+                'autoplay': 0,
+                'controls': 0,
+                'showinfo': 0,
+                'origin': window.location.origin
             },
-            'onStateChange': (event) => {
-                const btn = document.getElementById('music-play-btn');
-                const playSVG = '<svg class="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-                const pauseSVG = '<svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
-                if (event.data === YT.PlayerState.PLAYING) {
-                    if (btn) btn.innerHTML = pauseSVG;
-                    const videoData = event.target.getVideoData();
-                    if (videoData && videoData.title) {
-                        document.getElementById('music-title').innerText = videoData.title;
+            events: {
+                'onReady': (event) => {
+                    event.target.setVolume(100);
+                },
+                'onStateChange': (event) => {
+                    const btn = document.getElementById('music-play-btn');
+                    const playSVG = '<svg class="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+                    const pauseSVG = '<svg class="pause-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        if (btn) btn.innerHTML = pauseSVG;
+                        const videoData = event.target.getVideoData();
+                        if (videoData && videoData.title) {
+                            document.getElementById('music-title').innerText = videoData.title;
+                        }
+                    } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                        if (btn) btn.innerHTML = playSVG;
                     }
-                } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-                    if (btn) btn.innerHTML = playSVG;
                 }
             }
-        }
-    });
+        });
+    }
 
     const soundCards = document.querySelectorAll('.sound-card');
     
@@ -51,25 +53,28 @@ function onYouTubeIframeAPIReady() {
             }
 
             if (videoId) {
-                ytPlayers[soundId] = new YT.Player(`yt-player-${soundId}`, {
-                    height: '0',
-                    width: '0',
-                    videoId: videoId,
-                    playerVars: {
-                        'autoplay': 0,
-                        'controls': 0,
-                        'showinfo': 0,
-                        'rel': 0,
-                        'loop': 1,
-                        'origin': window.location.origin,
-                        'playlist': videoId // required for looping single video
-                    },
-                    events: {
-                        'onReady': (event) => {
-                            event.target.setVolume(100);
+                const playerNode = document.getElementById(`yt-player-${soundId}`);
+                if (playerNode && playerNode.tagName !== 'IFRAME') {
+                    ytPlayers[soundId] = new YT.Player(`yt-player-${soundId}`, {
+                        height: '0',
+                        width: '0',
+                        videoId: videoId,
+                        playerVars: {
+                            'autoplay': 0,
+                            'controls': 0,
+                            'showinfo': 0,
+                            'rel': 0,
+                            'loop': 1,
+                            'origin': window.location.origin,
+                            'playlist': videoId // required for looping single video
+                        },
+                        events: {
+                            'onReady': (event) => {
+                                event.target.setVolume(100);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     });
