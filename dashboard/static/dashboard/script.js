@@ -510,6 +510,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (form.id === 'save-preset-form') {
+            const config = {};
+            document.querySelectorAll('.sound-card').forEach(card => {
+                const soundId = card.getAttribute('data-id');
+                const isActive = card.classList.contains('active');
+                const volumeInput = document.querySelector(`.volume-slider[data-id="${soundId}"]`);
+                const volume = volumeInput ? volumeInput.value : 1;
+                config[soundId] = { active: isActive, volume: volume };
+            });
+            const hiddenInput = form.querySelector('#preset-settings-input');
+            if (hiddenInput) {
+                hiddenInput.value = JSON.stringify(config);
+            }
+        }
+
         const formData = new FormData(form);
         const actionUrl = form.action || window.location.href;
         
@@ -587,109 +602,95 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Rebind play toggles (since the HTML got replaced)
         attachMediaListeners();
+
+        // Database Presets Logic
+        const applyPresetBtn = document.getElementById('apply-preset-btn');
+        if (applyPresetBtn) {
+            const newApplyBtn = applyPresetBtn.cloneNode(true);
+            applyPresetBtn.parentNode.replaceChild(newApplyBtn, applyPresetBtn);
+            newApplyBtn.addEventListener('click', () => {
+                const selector = document.getElementById('preset-selector');
+                if (!selector.value) return;
+                const option = selector.options[selector.selectedIndex];
+                let settings;
+                try {
+                    settings = JSON.parse(option.getAttribute('data-settings') || '{}');
+                } catch (e) {
+                    console.error("Failed to parse preset settings", e);
+                    return;
+                }
+                
+                // Overwrite local auto-save
+                localStorage.setItem(`ambient_config_${CURRENT_USERNAME}`, JSON.stringify(settings));
+                
+                // Apply dynamically without reloading
+                document.querySelectorAll('.sound-card').forEach(card => {
+                    const soundId = card.getAttribute('data-id');
+                    const saved = settings[soundId];
+                    if (!saved) return;
+                    
+                    const url = card.getAttribute('data-url');
+                    const isYT = url.includes('youtube.com') || url.includes('youtu.be');
+                    const bubble = document.querySelector(`.bubble-${soundId}`);
+                    const bgVideo = document.getElementById(`yt-player-${soundId}`);
+                    const slider = document.querySelector(`.volume-slider[data-id="${soundId}"]`);
+                    
+                    if (slider) slider.value = saved.volume;
+                    
+                    if (isYT) {
+                        const player = ytPlayers[soundId];
+                        if (player && typeof player.setVolume === 'function') {
+                            player.setVolume(saved.volume * 100);
+                            if (saved.active) {
+                                player.playVideo();
+                                card.classList.add('active');
+                                if (bubble) bubble.classList.add('active');
+                                if (bgVideo) bgVideo.classList.add('active-bg');
+                            } else {
+                                player.pauseVideo();
+                                card.classList.remove('active');
+                                if (bubble) bubble.classList.remove('active');
+                                if (bgVideo) bgVideo.classList.remove('active-bg');
+                            }
+                        }
+                    } else {
+                        const audioEl = document.getElementById(`audio-${soundId}`);
+                        if (audioEl) {
+                            audioEl.volume = saved.volume;
+                            if (saved.active) {
+                                audioEl.play();
+                                card.classList.add('active');
+                                if (bubble) bubble.classList.add('active');
+                            } else {
+                                audioEl.pause();
+                                card.classList.remove('active');
+                                if (bubble) bubble.classList.remove('active');
+                            }
+                        }
+                    }
+                });
+                
+                updateBackgroundBlending();
+            });
+        }
+
+        const delPresetBtn = document.getElementById('delete-preset-btn');
+        if (delPresetBtn) {
+            const newDelBtn = delPresetBtn.cloneNode(true);
+            delPresetBtn.parentNode.replaceChild(newDelBtn, delPresetBtn);
+            newDelBtn.addEventListener('click', () => {
+                const selector = document.getElementById('preset-selector');
+                if (!selector.value) {
+                    alert('Please select a profile to delete.');
+                    return;
+                }
+                if(confirm("Are you sure you want to delete this profile?")) {
+                    document.getElementById('delete-preset-id').value = selector.value;
+                    document.getElementById('delete-preset-form').submit();
+                }
+            });
+        }
     }
 
     bindForms();
-
-    // Database Presets Logic
-    const savePresetForm = document.getElementById('save-preset-form');
-    if (savePresetForm) {
-        savePresetForm.addEventListener('submit', (e) => {
-            // It will bypass the AJAX submit because we attached this after, or actually we shouldn't use AJAX for this to ensure clean reload.
-            // Wait, submitAJAX prevents default. Let's explicitly remove it or just let AJAX handle it but populate the hidden field first!
-            const config = {};
-            document.querySelectorAll('.sound-card').forEach(card => {
-                const soundId = card.getAttribute('data-id');
-                const isActive = card.classList.contains('active');
-                const volumeInput = document.querySelector(`.volume-slider[data-id="${soundId}"]`);
-                const volume = volumeInput ? volumeInput.value : 1;
-                config[soundId] = { active: isActive, volume: volume };
-            });
-            document.getElementById('preset-settings-input').value = JSON.stringify(config);
-            // Let the native form submit or AJAX submit continue
-        });
-    }
-
-    const applyPresetBtn = document.getElementById('apply-preset-btn');
-    if (applyPresetBtn) {
-        applyPresetBtn.addEventListener('click', () => {
-            const selector = document.getElementById('preset-selector');
-            if (!selector.value) return;
-            const option = selector.options[selector.selectedIndex];
-            let settings;
-            try {
-                settings = JSON.parse(option.getAttribute('data-settings') || '{}');
-            } catch (e) {
-                console.error("Failed to parse preset settings", e);
-                return;
-            }
-            
-            // Overwrite local auto-save
-            localStorage.setItem(`ambient_config_${CURRENT_USERNAME}`, JSON.stringify(settings));
-            
-            // Apply dynamically without reloading
-            document.querySelectorAll('.sound-card').forEach(card => {
-                const soundId = card.getAttribute('data-id');
-                const saved = settings[soundId];
-                if (!saved) return;
-                
-                const url = card.getAttribute('data-url');
-                const isYT = url.includes('youtube.com') || url.includes('youtu.be');
-                const bubble = document.querySelector(`.bubble-${soundId}`);
-                const bgVideo = document.getElementById(`yt-player-${soundId}`);
-                const slider = document.querySelector(`.volume-slider[data-id="${soundId}"]`);
-                
-                if (slider) slider.value = saved.volume;
-                
-                if (isYT) {
-                    const player = ytPlayers[soundId];
-                    if (player && typeof player.setVolume === 'function') {
-                        player.setVolume(saved.volume * 100);
-                        if (saved.active) {
-                            player.playVideo();
-                            card.classList.add('active');
-                            if (bubble) bubble.classList.add('active');
-                            if (bgVideo) bgVideo.classList.add('active-bg');
-                        } else {
-                            player.pauseVideo();
-                            card.classList.remove('active');
-                            if (bubble) bubble.classList.remove('active');
-                            if (bgVideo) bgVideo.classList.remove('active-bg');
-                        }
-                    }
-                } else {
-                    const audioEl = document.getElementById(`audio-${soundId}`);
-                    if (audioEl) {
-                        audioEl.volume = saved.volume;
-                        if (saved.active) {
-                            audioEl.play();
-                            card.classList.add('active');
-                            if (bubble) bubble.classList.add('active');
-                        } else {
-                            audioEl.pause();
-                            card.classList.remove('active');
-                            if (bubble) bubble.classList.remove('active');
-                        }
-                    }
-                }
-            });
-            
-            updateBackgroundBlending();
-        });
-    }
-
-    const delPresetBtn = document.getElementById('delete-preset-btn');
-    if (delPresetBtn) {
-        delPresetBtn.addEventListener('click', () => {
-            const selector = document.getElementById('preset-selector');
-            if (!selector.value) {
-                alert('Please select a profile to delete.');
-                return;
-            }
-            if(confirm("Are you sure you want to delete this profile?")) {
-                document.getElementById('delete-preset-id').value = selector.value;
-                document.getElementById('delete-preset-form').submit();
-            }
-        });
-    }
 });
