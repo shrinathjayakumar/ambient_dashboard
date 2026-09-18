@@ -13,9 +13,6 @@
     <link rel="apple-touch-icon" href="{% static 'dashboard/icons/icon-192.png' %}">
 </head>
 <body>
-    <script>
-        const CURRENT_USERNAME = "{{ request.user.username }}";
-    </script>
     <!-- Fullscreen Video Background Container -->
     <div id="video-background-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; overflow: hidden;">
         {% for sound in sounds %}
@@ -117,44 +114,6 @@
                     <input type="url" name="url" placeholder="YouTube URL" required style="flex:2; padding:12px; border-radius:10px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:#fff;">
                     <button type="submit" class="yt-button" style="padding: 12px 20px; border-radius:10px; cursor: pointer; background:rgba(255,255,255,0.1);">Add</button>
                 </form>
-            </div>
-
-            <!-- Presets Section -->
-            <div class="card glass" style="margin-bottom: 25px; padding: 15px;">
-                <h4 style="margin-top: 0; color: var(--primary-color);">Saved Ambience Profiles</h4>
-                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                    
-                    <!-- Apply/Delete Preset -->
-                    <div style="display: flex; gap: 10px; align-items: center; flex: 1; min-width: 250px;">
-                        <select id="preset-selector" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:#fff; cursor:pointer;">
-                            <option value="">-- Select a saved profile --</option>
-                            {% for preset in presets %}
-                            <option value="{{ preset.id }}" data-settings="{{ preset.settings_json|escape }}">
-                                {{ preset.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <button class="yt-button" id="apply-preset-btn" style="padding: 10px 20px;">Play Profile</button>
-                        
-                        <form method="POST" id="delete-preset-form" style="display:inline; margin:0;">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="delete_preset">
-                            <input type="hidden" name="preset_id" id="delete-preset-id">
-                            <button type="button" class="yt-button" id="delete-preset-btn" style="padding: 10px 15px; background: rgba(255, 77, 77, 0.2); color: #ff4d4d; border-radius: 8px;" title="Delete Profile">
-                                Delete
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Save Current -->
-                    <form method="POST" style="display: flex; gap: 10px; align-items: center; flex: 1; min-width: 250px; margin:0;" id="save-preset-form">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="save_preset">
-                        <input type="hidden" name="preset_settings" id="preset-settings-input">
-                        <input type="text" name="preset_name" placeholder="Name (e.g. Study Focus)" required style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:#fff;">
-                        <button type="submit" class="yt-button" id="save-preset-btn" style="padding: 10px 20px;">Save Current Config</button>
-                    </form>
-                </div>
             </div>
 
             <div class="sound-grid">
