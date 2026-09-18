@@ -4,13 +4,15 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.db import models
-from .models import Sound, Playlist, Theme
+from .models import Sound, Playlist, Theme, Preset
+import json
 
 @login_required
 def dashboard_view(request):
     sounds = Sound.objects.filter(models.Q(allowed_users=request.user) | models.Q(user=request.user)).distinct()
     playlists = Playlist.objects.filter(models.Q(allowed_users=request.user) | models.Q(user=request.user)).distinct()
     themes = Theme.objects.filter(allowed_users=request.user).distinct()
+    presets = Preset.objects.filter(user=request.user)
     default_playlist = playlists.filter(is_default=True).first()
     
     if request.method == 'POST':
@@ -32,13 +34,28 @@ def dashboard_view(request):
             if name and url and icon:
                 s = Sound.objects.create(name=name, icon=icon, audio_url=url, user=request.user)
                 s.allowed_users.add(request.user)
+        elif action == 'save_preset':
+            name = request.POST.get('preset_name')
+            settings_str = request.POST.get('preset_settings')
+            if name and settings_str:
+                try:
+                    settings = json.loads(settings_str)
+                    Preset.objects.create(user=request.user, name=name, settings=settings)
+                except Exception:
+                    pass
+        elif action == 'delete_preset':
+            pk = request.POST.get('preset_id')
+            if pk:
+                Preset.objects.filter(pk=pk, user=request.user).delete()
+                
         return redirect('dashboard')
 
     return render(request, 'dashboard/index.html', {
         'sounds': sounds, 
         'playlists': playlists,
         'default_playlist': default_playlist,
-        'themes': themes
+        'themes': themes,
+        'presets': presets
     })
 
 @login_required

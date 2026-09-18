@@ -590,4 +590,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     bindForms();
+
+    // Database Presets Logic
+    const savePresetBtn = document.getElementById('save-preset-btn');
+    if (savePresetBtn) {
+        savePresetBtn.addEventListener('click', () => {
+            const config = {};
+            document.querySelectorAll('.sound-card').forEach(card => {
+                const soundId = card.getAttribute('data-id');
+                const isActive = card.classList.contains('active');
+                const volumeInput = document.querySelector(`.volume-slider[data-id="${soundId}"]`);
+                const volume = volumeInput ? volumeInput.value : 1;
+                config[soundId] = { active: isActive, volume: volume };
+            });
+            document.getElementById('preset-settings-input').value = JSON.stringify(config);
+            // Bypass AJAX for simplicity, just submit normally to refresh
+            document.getElementById('save-preset-form').submit(); 
+        });
+    }
+
+    const applyPresetBtn = document.getElementById('apply-preset-btn');
+    if (applyPresetBtn) {
+        applyPresetBtn.addEventListener('click', () => {
+            const selector = document.getElementById('preset-selector');
+            if (!selector.value) return;
+            const option = selector.options[selector.selectedIndex];
+            const settings = option.getAttribute('data-settings');
+            
+            // Overwrite the local auto-save with this preset
+            localStorage.setItem(`ambient_config_${CURRENT_USERNAME}`, settings);
+            
+            // Refresh the page to apply it cleanly across YT and HTML5
+            window.location.reload();
+        });
+    }
+
+    const delPresetBtn = document.getElementById('delete-preset-btn');
+    if (delPresetBtn) {
+        delPresetBtn.addEventListener('click', () => {
+            const selector = document.getElementById('preset-selector');
+            if (!selector.value) {
+                alert('Please select a profile to delete.');
+                return;
+            }
+            if(confirm("Are you sure you want to delete this profile?")) {
+                document.getElementById('delete-preset-id').value = selector.value;
+                document.getElementById('delete-preset-form').submit();
+            }
+        });
+    }
 });

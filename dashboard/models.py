@@ -29,3 +29,11 @@ class Playlist(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.user.username if self.user else 'Global'})"
+
+class Preset(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='presets')
+    name = models.CharField(max_length=100)
+    settings = models.JSONField(default=dict)
+
+    def __str__(self):
+        return f"{self.name} - {self.user.username}"
