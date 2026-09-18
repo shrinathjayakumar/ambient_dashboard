@@ -12,5 +12,5 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('sw.js', views.sw_js, name='sw_js'),
     path('app-manager/', views.app_manager, name='app_manager'),
-    path('admin/user/<int:user_id>/edit/', views.edit_user, name='edit_user'),
+    path('app-manager/user/<int:user_id>/edit/', views.edit_user, name='edit_user'),
 ]
