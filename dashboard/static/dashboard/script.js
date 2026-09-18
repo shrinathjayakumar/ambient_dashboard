@@ -2,19 +2,40 @@ let ytPlayers = {};
 let mainMusicPlayer;
 
 function onYouTubeIframeAPIReady() {
-    // Initialize Main Music Player Safely
     const mainPlayerNode = document.getElementById('main-music-player');
     if (mainPlayerNode && mainPlayerNode.tagName !== 'IFRAME') {
+        let initialVideoId = 'jfKfPfyJRdk';
+        let playerVars = {
+            'autoplay': 0,
+            'controls': 0,
+            'showinfo': 0,
+            'origin': window.location.origin
+        };
+
+        const playlistSelect = document.getElementById('playlist-select');
+        if (playlistSelect) {
+            const selectedOpt = playlistSelect.options[playlistSelect.selectedIndex];
+            if (selectedOpt && selectedOpt.value) {
+                const url = selectedOpt.value;
+                if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                    if (url.includes('list=')) {
+                        playerVars['listType'] = 'playlist';
+                        playerVars['list'] = url.split('list=')[1].split('&')[0];
+                        initialVideoId = '';
+                    } else if (url.includes('v=')) {
+                        initialVideoId = url.split('v=')[1].split('&')[0];
+                    } else if (url.includes('youtu.be/')) {
+                        initialVideoId = url.split('youtu.be/')[1].split('?')[0];
+                    }
+                }
+            }
+        }
+
         mainMusicPlayer = new YT.Player('main-music-player', {
-            height: '0',
-            width: '0',
-            videoId: 'jfKfPfyJRdk', 
-            playerVars: {
-                'autoplay': 0,
-                'controls': 0,
-                'showinfo': 0,
-                'origin': window.location.origin
-            },
+            height: '1',
+            width: '1',
+            videoId: initialVideoId, 
+            playerVars: playerVars,
             events: {
                 'onReady': (event) => {
                     event.target.setVolume(100);
@@ -194,15 +215,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 videoId = url.split('youtu.be/')[1].split('?')[0];
             }
 
-            if (mainMusicPlayer && typeof mainMusicPlayer.cuePlaylist === 'function') {
+            if (mainMusicPlayer && typeof mainMusicPlayer.loadPlaylist === 'function') {
                 if (listId) {
-                    mainMusicPlayer.cuePlaylist({list: listId, listType: 'playlist'});
+                    mainMusicPlayer.loadPlaylist({list: listId, listType: 'playlist'});
                 } else if (videoId) {
-                    mainMusicPlayer.cueVideoById(videoId);
+                    mainMusicPlayer.loadVideoById(videoId);
                 }
             } else {
-                // If mainMusicPlayer isn't ready yet, we can set default values in the global scope
-                // but since it initializes to Lofi Girl by default, it's safer to wait.
+                // If mainMusicPlayer isn't ready yet
                 setTimeout(() => loadPlaylist(url, name), 500);
             }
         }
@@ -213,12 +233,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedOpt = playlistSelect.options[playlistSelect.selectedIndex];
             loadPlaylist(e.target.value, selectedOpt.text);
         });
-        // Initial load
-        const selectedOpt = playlistSelect.options[playlistSelect.selectedIndex];
-        if (selectedOpt && selectedOpt.value) {
-            // Delay slightly to let YT API initialize if it's a YT link
-            setTimeout(() => loadPlaylist(selectedOpt.value, selectedOpt.text), 1000);
-        }
+        // Initial load is now handled natively in onYouTubeIframeAPIReady!
+        // No need to loadPlaylist here on page load.
     }
 
     // Main Music Player Controls
