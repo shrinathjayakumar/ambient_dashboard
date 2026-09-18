@@ -194,11 +194,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 videoId = url.split('youtu.be/')[1].split('?')[0];
             }
 
-            if (mainMusicPlayer && typeof mainMusicPlayer.loadPlaylist === 'function') {
+            if (mainMusicPlayer && typeof mainMusicPlayer.cuePlaylist === 'function') {
                 if (listId) {
-                    mainMusicPlayer.loadPlaylist({list: listId, listType: 'playlist'});
+                    mainMusicPlayer.cuePlaylist({list: listId, listType: 'playlist'});
                 } else if (videoId) {
-                    mainMusicPlayer.loadVideoById(videoId);
+                    mainMusicPlayer.cueVideoById(videoId);
                 }
             } else {
                 // If mainMusicPlayer isn't ready yet, we can set default values in the global scope
