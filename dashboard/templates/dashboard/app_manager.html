@@ -57,6 +57,9 @@
                         <input type="text" name="username" placeholder="Username" required>
                     </div>
                     <div class="form-group">
+                        <input type="text" name="email" placeholder="Email (Optional)">
+                    </div>
+                    <div class="form-group">
                         <input type="password" name="password" placeholder="Password" required>
                     </div>
                     <div class="form-group" style="display:flex; gap: 10px; align-items:center;">
@@ -70,18 +73,20 @@
             <div class="card glass">
                 <h3>Registered Users</h3>
                 <table class="data-table">
-                    <tr><th>Username</th><th>Is Admin?</th><th>Actions</th></tr>
+                    <tr><th>Username</th><th>Email</th><th>Is Admin?</th><th>Actions</th></tr>
                     {% for u in users %}
                     <tr>
                         <td>{{ u.username }}</td>
+                        <td>{{ u.email|default:"-" }}</td>
                         <td>{{ u.is_superuser|yesno:"Yes,No" }}</td>
                         <td>
                             <form method="POST" style="display:inline;">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="toggle_admin">
                                 <input type="hidden" name="user_id" value="{{ u.id }}">
-                                <button type="submit" class="yt-button" style="padding: 5px 10px; font-size: 0.8rem;">Toggle Admin</button>
+                                <button type="submit" class="yt-button" style="padding: 5px 10px; font-size: 0.8rem; margin-right: 5px;">Toggle Admin</button>
                             </form>
+                            <a href="{% url 'edit_user' u.id %}" class="yt-button" style="padding: 5px 10px; font-size: 0.8rem; text-decoration: none;">Edit User</a>
                         </td>
                     </tr>
                     {% endfor %}

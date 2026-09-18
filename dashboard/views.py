@@ -119,11 +119,12 @@ def app_manager(request):
         action = request.POST.get('action')
         if action == 'add_user':
             username = request.POST.get('username')
+            email = request.POST.get('email', '')
             password = request.POST.get('password')
             is_admin = request.POST.get('is_admin') == 'yes'
             if username and password:
                 if not User.objects.filter(username=username).exists():
-                    user = User.objects.create_user(username=username, password=password)
+                    user = User.objects.create_user(username=username, email=email, password=password)
                     user.is_superuser = is_admin
                     user.is_staff = is_admin
                     user.save()
@@ -160,6 +161,41 @@ def app_manager(request):
 
     return render(request, 'dashboard/app_manager.html', {
         'users': users,
+        'all_themes': all_themes,
+        'all_sounds': all_sounds,
+        'all_playlists': all_playlists
+    })
+
+@user_passes_test(lambda u: u.is_superuser)
+def edit_user(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    all_themes = Theme.objects.all()
+    all_sounds = Sound.objects.all()
+    all_playlists = Playlist.objects.all()
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'delete_user':
+            username = target_user.username
+            target_user.delete()
+            messages.success(request, f"User {username} has been deleted.")
+            return redirect('app_manager')
+            
+        elif action == 'update_permissions':
+            theme_ids = request.POST.getlist('themes')
+            sound_ids = request.POST.getlist('sounds')
+            playlist_ids = request.POST.getlist('playlists')
+
+            target_user.theme_set.set(theme_ids)
+            target_user.sound_set.set(sound_ids)
+            target_user.playlist_set.set(playlist_ids)
+
+            messages.success(request, f"Permissions updated for {target_user.username}.")
+            return redirect('app_manager')
+
+    return render(request, 'dashboard/edit_user.html', {
+        'target_user': target_user,
         'all_themes': all_themes,
         'all_sounds': all_sounds,
         'all_playlists': all_playlists

@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User Permissions</title>
+    <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}?v=5">
+    <style>
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--secondary-text); }
+        .multiselect { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); max-height: 200px; overflow-y: auto; margin-bottom: 20px;}
+        .multiselect label { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; color: #fff;}
+        .card { padding: 20px; margin-bottom: 20px; }
+        .delete-btn { background: #ff4d4d !important; color: white !important; }
+    </style>
+</head>
+<body>
+    <header style="flex-direction: row; justify-content: space-between;">
+        <h1>Edit User: {{ target_user.username }}</h1>
+        <a href="{% url 'app_manager' %}#users" class="yt-button" style="text-decoration: none;">Back to Admin Settings</a>
+    </header>
+
+    <main style="width: 100%; max-width: 900px; padding: 20px;">
+        
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div style="padding: 10px; background: var(--primary-color); color: #fff; border-radius: 8px; margin-bottom: 10px;">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="card glass">
+            <h3>User Info</h3>
+            <p><strong>Username:</strong> {{ target_user.username }}</p>
+            {% if target_user.email %}
+            <p><strong>Email:</strong> {{ target_user.email }}</p>
+            {% endif %}
+            <p><strong>Admin:</strong> {{ target_user.is_superuser|yesno:"Yes,No" }}</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="card glass">
+                <h3>Permitted Themes</h3>
+                <div class="multiselect">
+                    {% for theme in all_themes %}
+                    <label>
+                        <input type="checkbox" name="themes" value="{{ theme.id }}" {% if theme in target_user.theme_set.all %}checked{% endif %}>
+                        <span style="display:inline-block; width:15px; height:15px; background:{{theme.background_color_hex}}; border-radius:50%; margin-right:5px;"></span>
+                        {{ theme.name }}
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <h3>Permitted Ambience Enhancers</h3>
+                <div class="multiselect">
+                    {% for sound in all_sounds %}
+                    <label>
+                        <input type="checkbox" name="sounds" value="{{ sound.id }}" {% if sound in target_user.sound_set.all %}checked{% endif %}>
+                        {{ sound.icon }} {{ sound.name }}
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <h3>Permitted Playlists</h3>
+                <div class="multiselect">
+                    {% for playlist in all_playlists %}
+                    <label>
+                        <input type="checkbox" name="playlists" value="{{ playlist.id }}" {% if playlist in target_user.playlist_set.all %}checked{% endif %}>
+                        {{ playlist.name }}
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button type="submit" name="action" value="update_permissions" class="yt-button" style="padding: 10px 20px;">Save Permissions</button>
+                    <button type="submit" name="action" value="delete_user" class="yt-button delete-btn" style="padding: 10px 20px;" onclick="return confirm('Are you sure you want to delete this user? This cannot be undone.');">Delete User</button>
+                </div>
+            </div>
+        </form>
+
+    </main>
+
+    <script>
+        const savedTheme = localStorage.getItem('ambient_theme') || 'midnight';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</body>
+</html>
