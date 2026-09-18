@@ -86,7 +86,12 @@
                                 <input type="hidden" name="user_id" value="{{ u.id }}">
                                 <button type="submit" class="yt-button" style="padding: 5px 10px; font-size: 0.8rem; margin-right: 5px;">Toggle Admin</button>
                             </form>
-                            <a href="{% url 'edit_user' u.id %}" class="yt-button" style="padding: 5px 10px; font-size: 0.8rem; text-decoration: none;">Edit User</a>
+                            <a href="{% url 'edit_user' u.id %}" class="yt-button" style="padding: 5px 10px; font-size: 0.8rem; text-decoration: none; margin-right: 5px;">Edit User</a>
+                            <form method="POST" action="{% url 'edit_user' u.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_user">
+                                <button type="submit" class="yt-button" style="padding: 5px 10px; font-size: 0.8rem; background: #ff4d4d; color: white; border: none;" onclick="return confirm('Delete this user permanently?');">Delete</button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
