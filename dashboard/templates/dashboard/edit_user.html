@@ -40,6 +40,22 @@
             <p><strong>Admin:</strong> {{ target_user.is_superuser|yesno:"Yes,No" }}</p>
         </div>
 
+        <div class="card glass">
+            <h3>Change Password</h3>
+            <form method="POST" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_password">
+                <div style="flex: 1; min-width: 200px; display: flex; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; padding-right: 10px;">
+                    <input type="password" name="new_password" id="new_password" placeholder="New Password" required style="flex: 1; padding: 10px; border: none; background: transparent; color: #fff; outline: none;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="checkbox" id="show-pwd-edit" style="cursor: pointer; margin: 0;">
+                        <label for="show-pwd-edit" style="color: var(--secondary-text); font-size: 0.85rem; cursor: pointer; margin: 0;">Show</label>
+                    </div>
+                </div>
+                <button type="submit" class="yt-button" style="padding: 10px 20px;">Change Password</button>
+            </form>
+        </div>
+
         <form method="POST">
             {% csrf_token %}
             <div class="card glass">
@@ -86,6 +102,11 @@
     <script>
         const savedTheme = localStorage.getItem('ambient_theme') || 'midnight';
         document.documentElement.setAttribute('data-theme', savedTheme);
+
+        document.getElementById('show-pwd-edit').addEventListener('change', function() {
+            const pwdInput = document.getElementById('new_password');
+            pwdInput.type = this.checked ? 'text' : 'password';
+        });
     </script>
 </body>
 </html>

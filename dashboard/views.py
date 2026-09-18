@@ -193,6 +193,16 @@ def edit_user(request, user_id):
             messages.success(request, f"Permissions updated for {target_user.username}.")
             return redirect('app_manager')
 
+        elif action == 'change_password':
+            new_password = request.POST.get('new_password')
+            if new_password:
+                target_user.set_password(new_password)
+                target_user.save()
+                messages.success(request, f"Password successfully changed for {target_user.username}.")
+            else:
+                messages.error(request, "Password cannot be empty.")
+            return redirect('edit_user', user_id=target_user.id)
+
     return render(request, 'dashboard/edit_user.html', {
         'target_user': target_user,
         'all_themes': all_themes,
