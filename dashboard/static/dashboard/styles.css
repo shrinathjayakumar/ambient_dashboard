@@ -511,3 +511,67 @@ input[type=range]::-webkit-slider-thumb:active {
     height: 28px;
 }
 
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    header {
+        padding: 15px 10px;
+    }
+    header > div:first-child {
+        flex-wrap: wrap;
+        justify-content: center !important;
+    }
+    .nav-bar {
+        flex-direction: column;
+        width: 100%;
+        border-radius: 15px;
+    }
+    .nav-btn {
+        width: 100%;
+        text-align: center;
+        border-radius: 10px;
+    }
+    .music-player-card {
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+    }
+    .music-info {
+        text-align: center;
+        width: 100%;
+    }
+    .music-controls {
+        min-width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    form {
+        flex-direction: column;
+        width: 100%;
+    }
+    form input, form button {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+    .sound-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 15px;
+    }
+    .icon {
+        font-size: 3rem;
+    }
+    .yt-button {
+        text-align: center;
+    }
+    ul li {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start !important;
+    }
+    ul li > div {
+        width: 100%;
+    }
+    ul li > div:last-child {
+        flex-wrap: wrap;
+    }
+}
+
