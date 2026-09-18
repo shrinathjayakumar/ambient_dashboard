@@ -113,25 +113,15 @@
 
             <div class="card glass">
                 <h3>Manage Themes Access</h3>
-                <p style="color: var(--secondary-text); font-size: 0.9rem;">Check the box next to a user's name to grant them access to the theme.</p>
-                <form method="POST">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="update_all_themes_access">
+                <p style="color: var(--secondary-text); font-size: 0.9rem;">Click "Manage Access" to assign users to a theme.</p>
+                <div style="margin-top: 15px;">
                     {% for theme in all_themes %}
-                    <div style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        <h4 style="color: {{ theme.background_color_hex }}; filter: brightness(1.5);">{{ theme.name }} ({{ theme.css_class }})</h4>
-                        <div class="multiselect">
-                            {% for u in users %}
-                            <label>
-                                <input type="checkbox" name="theme_{{ theme.id }}_users" value="{{ u.id }}" {% if u in theme.allowed_users.all %}checked{% endif %}>
-                                {{ u.username }}
-                            </label>
-                            {% endfor %}
-                        </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <h4 style="color: {{ theme.background_color_hex }}; filter: brightness(1.5); margin: 0;">{{ theme.name }} ({{ theme.css_class }})</h4>
+                        <a href="{% url 'manage_theme_access' theme.id %}" class="yt-button" style="text-decoration: none; padding: 5px 15px; font-size: 0.85rem;">Manage Access</a>
                     </div>
                     {% endfor %}
-                    <button type="submit" class="yt-button" style="margin-top: 10px; width: 100%;">Save All Themes Access</button>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -139,24 +129,15 @@
         <div id="sounds" class="tab-content">
             <div class="card glass">
                 <h3>Manage Sounds Access</h3>
-                <form method="POST">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="update_all_sounds_access">
+                <p style="color: var(--secondary-text); font-size: 0.9rem;">Click "Manage Access" to assign users to a sound.</p>
+                <div style="margin-top: 15px;">
                     {% for sound in all_sounds %}
-                    <div style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        <h4>{{ sound.icon }} {{ sound.name }}</h4>
-                        <div class="multiselect">
-                            {% for u in users %}
-                            <label>
-                                <input type="checkbox" name="sound_{{ sound.id }}_users" value="{{ u.id }}" {% if u in sound.allowed_users.all %}checked{% endif %}>
-                                {{ u.username }}
-                            </label>
-                            {% endfor %}
-                        </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <h4 style="margin: 0;">{{ sound.icon }} {{ sound.name }}</h4>
+                        <a href="{% url 'manage_sound_access' sound.id %}" class="yt-button" style="text-decoration: none; padding: 5px 15px; font-size: 0.85rem;">Manage Access</a>
                     </div>
                     {% endfor %}
-                    <button type="submit" class="yt-button" style="margin-top: 10px; width: 100%;">Save All Sounds Access</button>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -164,24 +145,15 @@
         <div id="playlists" class="tab-content">
             <div class="card glass">
                 <h3>Manage Playlists Access</h3>
-                <form method="POST">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="update_all_playlists_access">
+                <p style="color: var(--secondary-text); font-size: 0.9rem;">Click "Manage Access" to assign users to a playlist.</p>
+                <div style="margin-top: 15px;">
                     {% for playlist in all_playlists %}
-                    <div style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        <h4>{{ playlist.name }}</h4>
-                        <div class="multiselect">
-                            {% for u in users %}
-                            <label>
-                                <input type="checkbox" name="playlist_{{ playlist.id }}_users" value="{{ u.id }}" {% if u in playlist.allowed_users.all %}checked{% endif %}>
-                                {{ u.username }}
-                            </label>
-                            {% endfor %}
-                        </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <h4 style="margin: 0;">{{ playlist.name }}</h4>
+                        <a href="{% url 'manage_playlist_access' playlist.id %}" class="yt-button" style="text-decoration: none; padding: 5px 15px; font-size: 0.85rem;">Manage Access</a>
                     </div>
                     {% endfor %}
-                    <button type="submit" class="yt-button" style="margin-top: 10px; width: 100%;">Save All Playlists Access</button>
-                </form>
+                </div>
             </div>
         </div>
 

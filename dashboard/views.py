@@ -199,3 +199,43 @@ def edit_user(request, user_id):
         'all_sounds': all_sounds,
         'all_playlists': all_playlists
     })
+
+def _manage_access_generic(request, obj, pk, redirect_name, item_name, back_hash):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'grant':
+            user_ids = request.POST.getlist('user_ids')
+            if user_ids:
+                obj.allowed_users.add(*user_ids)
+                messages.success(request, f"Access granted to {len(user_ids)} user(s).")
+        elif action == 'revoke':
+            user_id = request.POST.get('user_id')
+            if user_id:
+                obj.allowed_users.remove(user_id)
+                messages.success(request, "Access revoked.")
+        return redirect(redirect_name, pk=pk)
+        
+    allowed_users = obj.allowed_users.all().order_by('username')
+    unassigned_users = User.objects.exclude(id__in=allowed_users.values_list('id', flat=True)).order_by('username')
+    
+    return render(request, 'dashboard/manage_access.html', {
+        'item_name': item_name,
+        'allowed_users': allowed_users,
+        'unassigned_users': unassigned_users,
+        'back_hash': back_hash
+    })
+
+@user_passes_test(lambda u: u.is_superuser)
+def manage_theme_access(request, pk):
+    theme = get_object_or_404(Theme, pk=pk)
+    return _manage_access_generic(request, theme, pk, 'manage_theme_access', f"Theme: {theme.name}", '#themes')
+
+@user_passes_test(lambda u: u.is_superuser)
+def manage_sound_access(request, pk):
+    sound = get_object_or_404(Sound, pk=pk)
+    return _manage_access_generic(request, sound, pk, 'manage_sound_access', f"Sound: {sound.name}", '#sounds')
+
+@user_passes_test(lambda u: u.is_superuser)
+def manage_playlist_access(request, pk):
+    playlist = get_object_or_404(Playlist, pk=pk)
+    return _manage_access_generic(request, playlist, pk, 'manage_playlist_access', f"Playlist: {playlist.name}", '#playlists')

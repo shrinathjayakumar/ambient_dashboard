@@ -13,4 +13,7 @@ urlpatterns = [
     path('sw.js', views.sw_js, name='sw_js'),
     path('app-manager/', views.app_manager, name='app_manager'),
     path('app-manager/user/<int:user_id>/edit/', views.edit_user, name='edit_user'),
+    path('app-manager/theme/<int:pk>/access/', views.manage_theme_access, name='manage_theme_access'),
+    path('app-manager/sound/<int:pk>/access/', views.manage_sound_access, name='manage_sound_access'),
+    path('app-manager/playlist/<int:pk>/access/', views.manage_playlist_access, name='manage_playlist_access'),
 ]
