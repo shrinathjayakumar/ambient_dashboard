@@ -13,6 +13,9 @@ def dashboard_view(request):
     playlists = Playlist.objects.filter(models.Q(allowed_users=request.user) | models.Q(user=request.user)).distinct()
     themes = Theme.objects.filter(allowed_users=request.user).distinct()
     presets = Preset.objects.filter(user=request.user)
+    for p in presets:
+        p.settings_json = json.dumps(p.settings)
+        
     default_playlist = playlists.filter(is_default=True).first()
     
     if request.method == 'POST':

@@ -129,7 +129,9 @@
                         <select id="preset-selector" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:#fff; cursor:pointer;">
                             <option value="">-- Select a saved profile --</option>
                             {% for preset in presets %}
-                            <option value="{{ preset.id }}" data-settings='{{ preset.settings|escapejs }}'>{{ preset.name }}</option>
+                            <option value="{{ preset.id }}" data-settings="{{ preset.settings_json|escape }}">
+                                {{ preset.name }}
+                            </option>
                             {% endfor %}
                         </select>
                         <button class="yt-button" id="apply-preset-btn" style="padding: 10px 20px;">Play Profile</button>
