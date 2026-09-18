@@ -1,6 +1,28 @@
 let ytPlayers = {};
 let mainMusicPlayer;
 
+window.getAmbienceConfig = function() {
+    if (typeof CURRENT_USERNAME === 'undefined') return {};
+    try {
+        return JSON.parse(localStorage.getItem(`ambient_config_${CURRENT_USERNAME}`)) || {};
+    } catch(e) {
+        return {};
+    }
+};
+
+window.saveAmbienceConfig = function() {
+    if (typeof CURRENT_USERNAME === 'undefined') return;
+    const config = {};
+    document.querySelectorAll('.sound-card').forEach(card => {
+        const soundId = card.getAttribute('data-id');
+        const isActive = card.classList.contains('active');
+        const volumeInput = document.querySelector(`.volume-slider[data-id="${soundId}"]`);
+        const volume = volumeInput ? volumeInput.value : 1;
+        config[soundId] = { active: isActive, volume: volume };
+    });
+    localStorage.setItem(`ambient_config_${CURRENT_USERNAME}`, JSON.stringify(config));
+};
+
 function onYouTubeIframeAPIReady() {
     const mainPlayerNode = document.getElementById('main-music-player');
     if (mainPlayerNode && mainPlayerNode.tagName !== 'IFRAME') {
@@ -91,7 +113,27 @@ function onYouTubeIframeAPIReady() {
                         },
                         events: {
                             'onReady': (event) => {
-                                event.target.setVolume(100);
+                                const config = window.getAmbienceConfig();
+                                const saved = config[soundId];
+                                if (saved) {
+                                    event.target.setVolume(saved.volume * 100);
+                                    // Set UI slider
+                                    const slider = document.querySelector(`.volume-slider[data-id="${soundId}"]`);
+                                    if (slider) slider.value = saved.volume;
+                                    
+                                    if (saved.active) {
+                                        // Attempt autoplay if it was active
+                                        event.target.playVideo();
+                                        const card = document.querySelector(`.sound-card[data-id="${soundId}"]`);
+                                        const bubble = document.querySelector(`.bubble-${soundId}`);
+                                        const bgVideo = document.getElementById(`yt-player-${soundId}`);
+                                        if (card) card.classList.add('active');
+                                        if (bubble) bubble.classList.add('active');
+                                        if (bgVideo) bgVideo.classList.add('active-bg');
+                                    }
+                                } else {
+                                    event.target.setVolume(100);
+                                }
                             }
                         }
                     });
@@ -291,11 +333,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function attachMediaListeners() {
         const playToggles = document.querySelectorAll('.play-toggle');
         const volumeSliders = document.querySelectorAll('.volume-slider');
+        const config = window.getAmbienceConfig();
 
         // Handle Play/Pause
         playToggles.forEach(button => {
-            // Remove previous listener by replacing node if necessary, but since these are freshly injected DOM elements, we can just attach.
-            // But to be safe, clone the button to strip any existing listeners:
             const newButton = button.cloneNode(true);
             if (button.parentNode) {
                 button.parentNode.replaceChild(newButton, button);
@@ -341,10 +382,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 updateBackgroundBlending();
+                window.saveAmbienceConfig();
             });
         });
 
-        // Handle Volume
+        // Handle Volume and Initialize HTML5 Audio
         volumeSliders.forEach(slider => {
             const newSlider = slider.cloneNode(true);
             if (slider.parentNode) {
@@ -359,7 +401,21 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!isYT) {
                 const audioEl = document.getElementById(`audio-${soundId}`);
-                if (audioEl) audioEl.volume = newSlider.value;
+                if (audioEl) {
+                    const saved = config[soundId];
+                    if (saved) {
+                        newSlider.value = saved.volume;
+                        audioEl.volume = saved.volume;
+                        if (saved.active) {
+                            audioEl.play();
+                            card.classList.add('active');
+                            const bubble = document.querySelector(`.bubble-${soundId}`);
+                            if (bubble) bubble.classList.add('active');
+                        }
+                    } else {
+                        audioEl.volume = newSlider.value;
+                    }
+                }
             }
 
             newSlider.addEventListener('input', (e) => {
@@ -372,6 +428,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const audioEl = document.getElementById(`audio-${soundId}`);
                     if (audioEl) audioEl.volume = e.target.value;
                 }
+            });
+            
+            newSlider.addEventListener('change', () => {
+                window.saveAmbienceConfig();
             });
         });
     }

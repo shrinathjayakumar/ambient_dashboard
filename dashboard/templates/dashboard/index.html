@@ -13,6 +13,9 @@
     <link rel="apple-touch-icon" href="{% static 'dashboard/icons/icon-192.png' %}">
 </head>
 <body>
+    <script>
+        const CURRENT_USERNAME = "{{ request.user.username }}";
+    </script>
     <!-- Fullscreen Video Background Container -->
     <div id="video-background-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; overflow: hidden;">
         {% for sound in sounds %}
