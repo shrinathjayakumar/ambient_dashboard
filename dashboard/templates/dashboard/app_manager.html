@@ -114,25 +114,24 @@
             <div class="card glass">
                 <h3>Manage Themes Access</h3>
                 <p style="color: var(--secondary-text); font-size: 0.9rem;">Check the box next to a user's name to grant them access to the theme.</p>
-                {% for theme in all_themes %}
-                <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-                    <h4 style="color: {{ theme.background_color_hex }}; filter: brightness(1.5);">{{ theme.name }} ({{ theme.css_class }})</h4>
-                    <form method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="update_theme_access">
-                        <input type="hidden" name="theme_id" value="{{ theme.id }}">
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_all_themes_access">
+                    {% for theme in all_themes %}
+                    <div style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <h4 style="color: {{ theme.background_color_hex }}; filter: brightness(1.5);">{{ theme.name }} ({{ theme.css_class }})</h4>
                         <div class="multiselect">
                             {% for u in users %}
                             <label>
-                                <input type="checkbox" name="allowed_users" value="{{ u.id }}" {% if u in theme.allowed_users.all %}checked{% endif %}>
+                                <input type="checkbox" name="theme_{{ theme.id }}_users" value="{{ u.id }}" {% if u in theme.allowed_users.all %}checked{% endif %}>
                                 {{ u.username }}
                             </label>
                             {% endfor %}
                         </div>
-                        <button type="submit" class="yt-button" style="margin-top: 10px;">Save Access</button>
-                    </form>
-                </div>
-                {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="yt-button" style="margin-top: 10px; width: 100%;">Save All Themes Access</button>
+                </form>
             </div>
         </div>
 
@@ -140,25 +139,24 @@
         <div id="sounds" class="tab-content">
             <div class="card glass">
                 <h3>Manage Sounds Access</h3>
-                {% for sound in all_sounds %}
-                <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-                    <h4>{{ sound.icon }} {{ sound.name }}</h4>
-                    <form method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="update_sound_access">
-                        <input type="hidden" name="sound_id" value="{{ sound.id }}">
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_all_sounds_access">
+                    {% for sound in all_sounds %}
+                    <div style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <h4>{{ sound.icon }} {{ sound.name }}</h4>
                         <div class="multiselect">
                             {% for u in users %}
                             <label>
-                                <input type="checkbox" name="allowed_users" value="{{ u.id }}" {% if u in sound.allowed_users.all %}checked{% endif %}>
+                                <input type="checkbox" name="sound_{{ sound.id }}_users" value="{{ u.id }}" {% if u in sound.allowed_users.all %}checked{% endif %}>
                                 {{ u.username }}
                             </label>
                             {% endfor %}
                         </div>
-                        <button type="submit" class="yt-button" style="margin-top: 10px;">Save Access</button>
-                    </form>
-                </div>
-                {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="yt-button" style="margin-top: 10px; width: 100%;">Save All Sounds Access</button>
+                </form>
             </div>
         </div>
 
@@ -166,25 +164,24 @@
         <div id="playlists" class="tab-content">
             <div class="card glass">
                 <h3>Manage Playlists Access</h3>
-                {% for playlist in all_playlists %}
-                <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-                    <h4>{{ playlist.name }}</h4>
-                    <form method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="update_playlist_access">
-                        <input type="hidden" name="playlist_id" value="{{ playlist.id }}">
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_all_playlists_access">
+                    {% for playlist in all_playlists %}
+                    <div style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <h4>{{ playlist.name }}</h4>
                         <div class="multiselect">
                             {% for u in users %}
                             <label>
-                                <input type="checkbox" name="allowed_users" value="{{ u.id }}" {% if u in playlist.allowed_users.all %}checked{% endif %}>
+                                <input type="checkbox" name="playlist_{{ playlist.id }}_users" value="{{ u.id }}" {% if u in playlist.allowed_users.all %}checked{% endif %}>
                                 {{ u.username }}
                             </label>
                             {% endfor %}
                         </div>
-                        <button type="submit" class="yt-button" style="margin-top: 10px;">Save Access</button>
-                    </form>
-                </div>
-                {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="yt-button" style="margin-top: 10px; width: 100%;">Save All Playlists Access</button>
+                </form>
             </div>
         </div>
 

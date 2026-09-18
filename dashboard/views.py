@@ -138,24 +138,23 @@ def app_manager(request):
             user.is_staff = user.is_superuser
             user.save()
             messages.success(request, f"Admin status toggled for {user.username}")
-        elif action == 'update_theme_access':
-            theme_id = request.POST.get('theme_id')
-            allowed_users = request.POST.getlist('allowed_users')
-            theme = get_object_or_404(Theme, id=theme_id)
-            theme.allowed_users.set(allowed_users)
-            messages.success(request, f"Access updated for {theme.name}")
-        elif action == 'update_sound_access':
-            sound_id = request.POST.get('sound_id')
-            allowed_users = request.POST.getlist('allowed_users')
-            sound = get_object_or_404(Sound, id=sound_id)
-            sound.allowed_users.set(allowed_users)
-            messages.success(request, f"Access updated for sound: {sound.name}")
-        elif action == 'update_playlist_access':
-            playlist_id = request.POST.get('playlist_id')
-            allowed_users = request.POST.getlist('allowed_users')
-            playlist = get_object_or_404(Playlist, id=playlist_id)
-            playlist.allowed_users.set(allowed_users)
-            messages.success(request, f"Access updated for playlist: {playlist.name}")
+        elif action == 'update_all_themes_access':
+            for theme in all_themes:
+                allowed_users = request.POST.getlist(f'theme_{theme.id}_users')
+                theme.allowed_users.set(allowed_users)
+            messages.success(request, "Themes access updated successfully!")
+            
+        elif action == 'update_all_sounds_access':
+            for sound in all_sounds:
+                allowed_users = request.POST.getlist(f'sound_{sound.id}_users')
+                sound.allowed_users.set(allowed_users)
+            messages.success(request, "Sounds access updated successfully!")
+            
+        elif action == 'update_all_playlists_access':
+            for playlist in all_playlists:
+                allowed_users = request.POST.getlist(f'playlist_{playlist.id}_users')
+                playlist.allowed_users.set(allowed_users)
+            messages.success(request, "Playlists access updated successfully!")
             
         return redirect('app_manager')
 
