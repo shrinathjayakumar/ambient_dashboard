@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Manager</title>
-    <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}?v=2">
+    <title>Admin Settings</title>
+    <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}?v=5">
     <style>
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; }
         .tab-btn { background: transparent; border: none; color: var(--text-color); font-size: 1rem; cursor: pointer; padding: 10px 15px; border-radius: 8px; transition: 0.3s; }
@@ -25,7 +25,7 @@
 </head>
 <body>
     <header style="flex-direction: row; justify-content: space-between;">
-        <h1>Application Manager</h1>
+        <h1>Admin Settings</h1>
         <a href="{% url 'dashboard' %}" class="yt-button" style="text-decoration: none;">Back to Dashboard</a>
     </header>
 
@@ -40,10 +40,10 @@
         {% endif %}
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('users', event)">Users</button>
-            <button class="tab-btn" onclick="showTab('themes', event)">Themes</button>
-            <button class="tab-btn" onclick="showTab('sounds', event)">Ambience Enhancers</button>
-            <button class="tab-btn" onclick="showTab('playlists', event)">Playlists</button>
+            <button id="btn-users" class="tab-btn active" onclick="showTab('users', event)">Users</button>
+            <button id="btn-themes" class="tab-btn" onclick="showTab('themes', event)">Themes</button>
+            <button id="btn-sounds" class="tab-btn" onclick="showTab('sounds', event)">Ambience Enhancers</button>
+            <button id="btn-playlists" class="tab-btn" onclick="showTab('playlists', event)">Playlists</button>
         </div>
 
         <!-- USERS TAB -->
@@ -174,15 +174,33 @@
         function showTab(tabId, event) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            if(event) {
-                event.target.classList.add('active');
-            }
+            
+            const targetContent = document.getElementById(tabId);
+            const targetBtn = document.getElementById('btn-' + tabId);
+            
+            if (targetContent) targetContent.classList.add('active');
+            if (targetBtn) targetBtn.classList.add('active');
         }
         
         // Ensure the correct theme background is applied
         const savedTheme = localStorage.getItem('ambient_theme') || 'midnight';
         document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        // Handle URL hash on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                showTab(hash);
+            }
+        });
+        
+        // Handle URL hash changes
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                showTab(hash);
+            }
+        });
     </script>
 </body>
 </html>

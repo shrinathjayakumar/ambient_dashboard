@@ -33,7 +33,15 @@
             </select>
             {% endif %}
             {% if request.user.is_superuser %}
-            <a href="{% url 'app_manager' %}" class="yt-button" style="padding: 5px 15px; font-size: 0.8rem; background: var(--primary-color); text-decoration: none; border-radius: 8px;">Application Manager</a>
+            <div class="dropdown">
+                <button class="yt-button" style="padding: 5px 15px; font-size: 0.8rem; background: var(--primary-color); border:none; cursor:pointer; border-radius: 8px; color:#fff;">Admin Settings ▾</button>
+                <div class="dropdown-content">
+                    <a href="{% url 'app_manager' %}#users">Users</a>
+                    <a href="{% url 'app_manager' %}#themes">Themes</a>
+                    <a href="{% url 'app_manager' %}#sounds">Ambience Enhancers</a>
+                    <a href="{% url 'app_manager' %}#playlists">Playlists</a>
+                </div>
+            </div>
             {% endif %}
             <form method="POST" action="{% url 'logout' %}" style="margin:0;">
                 {% csrf_token %}

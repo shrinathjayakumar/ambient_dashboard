@@ -468,6 +468,38 @@ input[type=range]::-webkit-slider-thumb:active {
 }
 
 
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: var(--surface-color);
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+.dropdown-content a {
+    color: var(--text-color);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+.dropdown-content a:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
 /* Music Control Redesign */
 .icon-btn {
     width: 45px;
